@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # يتيح لك تشغيل البوت يدوياً بضغطة زر
+  workflow_dispatch:
 
 jobs:
   run-bot:
@@ -17,17 +17,24 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-state: '3.10'
+        python-version: '3.10'
 
+    # خطوة إضافية لفك ضغط الملف برمجياً داخل السيرفر الافتراضي
+    - name: Unzip TeleStars File
+      run: |
+        sudo apt-get install unzip -y
+        unzip TeleStars.zip -d .
+        
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        # سيبحث عنrequirements داخل المجلد المستخرج
+        pip install -r Download/requirements.txt || pip install -r requirements.txt
 
     - name: Run Telegram Bot
       env:
-        # هنا نقوم بتمرير المتغيرات السرية التي حفظناها في الإعدادات إلى البيئة التشغيلية
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         MNEMONIC: ${{ secrets.MNEMONIC }}
       run: |
-        python main.py
+        # تشغيل ملف main من داخل مجلد Download المستخرج
+        python Download/main.py || python main.py
